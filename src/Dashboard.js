@@ -10,6 +10,7 @@ const Dashboard = () => (
       <div className="card">
         <p className="card-title">Missing Key Identifiers</p>
         <p className="card-value red">0</p>
+    
         <p className="card-description">Requires immediate attention</p>
       </div>
       <div className="card">
