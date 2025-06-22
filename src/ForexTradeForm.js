@@ -1,31 +1,17 @@
-// Paste this into your ForexTradeForm.js
-
 import React, { useState } from 'react';
-import './App.css';
 import * as XLSX from 'xlsx';
+import './App.css';
+import './TradeForms.css';
 
 const ForexTradeForm = () => {
   const initialForm = {
-    TradeID: '',
-    TraderID: '',
-    CurrencyPair: '',
-    FXRate: '',
-    TradeDate: '',
-    SettlementDate: '',
-    NotionalAmount: '',
-    BuySell: '',
-    Broker: '',
-    Custodian: '',
-    ExceptionFlag: '',
-    ExceptionNotes: ''
+    TradeID: '', TraderID: '', CurrencyPair: '', FXRate: '',
+    TradeDate: '', SettlementDate: '', NotionalAmount: '',
+    BuySell: '', Broker: '', Custodian: '',
+    ExceptionFlag: '', ExceptionNotes: ''
   };
 
-  const fixedColumnOrder = [
-    'TradeID', 'TraderID', 'CurrencyPair', 'FXRate',
-    'BuySell', 'NotionalAmount', 'TradeDate', 'SettlementDate',
-    'Broker', 'Custodian', 'ExceptionFlag', 'ExceptionNotes'
-  ];
-
+  const fixedColumnOrder = Object.keys(initialForm);
   const [form, setForm] = useState(initialForm);
   const [excelData, setExcelData] = useState([]);
   const [selectedColumns, setSelectedColumns] = useState(fixedColumnOrder);
@@ -39,10 +25,7 @@ const ForexTradeForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const newRow = { ...form };
-    const updated = [...excelData, newRow];
-    setExcelData(updated);
-    setSelectedColumns(fixedColumnOrder);
-    setSelectAll(true);
+    setExcelData(prev => [...prev, newRow]);
     setForm(initialForm);
     alert('Forex trade submitted!');
   };
@@ -65,21 +48,16 @@ const ForexTradeForm = () => {
   };
 
   const handleSelectAllToggle = () => {
-    if (selectAll) {
-      setSelectedColumns([]);
-      setSelectAll(false);
-    } else {
-      setSelectedColumns(fixedColumnOrder);
-      setSelectAll(true);
-    }
+    setSelectAll(!selectAll);
+    setSelectedColumns(selectAll ? [] : fixedColumnOrder);
   };
 
-  const handleColumnToggle = (column) => {
-    if (selectedColumns.includes(column)) {
-      setSelectedColumns(selectedColumns.filter(col => col !== column));
+  const handleColumnToggle = (col) => {
+    if (selectedColumns.includes(col)) {
+      setSelectedColumns(selectedColumns.filter(c => c !== col));
       setSelectAll(false);
     } else {
-      const updated = [...selectedColumns, column];
+      const updated = [...selectedColumns, col];
       setSelectedColumns(updated);
       setSelectAll(updated.length === fixedColumnOrder.length);
     }
@@ -87,11 +65,7 @@ const ForexTradeForm = () => {
 
   const downloadCSV = () => {
     const filtered = excelData.map(row =>
-      Object.fromEntries(
-        fixedColumnOrder
-          .filter((col) => selectedColumns.includes(col))
-          .map((col) => [col, row[col]])
-      )
+      Object.fromEntries(fixedColumnOrder.filter(col => selectedColumns.includes(col)).map(col => [col, row[col]]))
     );
     const worksheet = XLSX.utils.json_to_sheet(filtered);
     const workbook = XLSX.utils.book_new();
@@ -103,98 +77,9 @@ const ForexTradeForm = () => {
     <div>
       <h2>Forex Trade Data Entry</h2>
       <form onSubmit={handleSubmit} className="form-box">
-        <div className="form-row">
-          <input name="TradeID" placeholder="Trade ID" value={form.TradeID} onChange={handleChange} />
-          <input name="TraderID" placeholder="Trader ID" value={form.TraderID} onChange={handleChange} />
-        </div>
-        <div className="form-row">
-          <select name="CurrencyPair" value={form.CurrencyPair} onChange={handleChange}>
-            <option value="">Select currency pair</option>
-            <option value="EUR/USD">EUR/USD</option>
-            <option value="USD/INR">USD/INR</option>
-            <option value="JPY/USD">JPY/USD</option>
-          </select>
-          <input name="FXRate" placeholder="FX Rate" value={form.FXRate} onChange={handleChange} />
-        </div>
-        <div className="form-row">
-          <select name="BuySell" value={form.BuySell} onChange={handleChange}>
-            <option value="">Select trade type</option>
-            <option value="Buy">Buy</option>
-            <option value="Sell">Sell</option>
-          </select>
-          <input type="number" name="NotionalAmount" placeholder="Notional Amount" value={form.NotionalAmount} onChange={handleChange} />
-        </div>
-        <div className="form-row">
-          <label>Trade Date</label>
-          <input type="date" name="TradeDate" value={form.TradeDate} onChange={handleChange} />
-          <label>Settlement Date</label>
-          <input type="date" name="SettlementDate" value={form.SettlementDate} onChange={handleChange} />
-        </div>
-        <div className="form-row">
-          <select name="Broker" value={form.Broker} onChange={handleChange}>
-            <option value="">Select broker</option>
-            <option value="ICAP">ICAP</option>
-            <option value="GFI">GFI</option>
-          </select>
-          <select name="Custodian" value={form.Custodian} onChange={handleChange}>
-            <option value="">Select custodian</option>
-            <option value="BNY Mellon">BNY Mellon</option>
-            <option value="Citi">Citi</option>
-          </select>
-        </div>
-        <div className="form-row checkbox-row">
-          <input type="checkbox" id="exceptionFlag" name="ExceptionFlag" checked={form.ExceptionFlag === 'Yes'} onChange={handleChange} />
-          <label htmlFor="exceptionFlag">Exception Flag</label>
-        </div>
-        <div className="form-row full">
-          <textarea name="ExceptionNotes" placeholder="Enter exception details..." value={form.ExceptionNotes} onChange={handleChange} />
-        </div>
-        <div className="form-row full">
-          <label htmlFor="fileUpload">Upload Forex Excel File</label>
-          <input type="file" id="fileUpload" accept=".csv, .xlsx" onChange={handleFileUpload} />
-        </div>
-        <div className="form-row right" style={{ gap: '1rem' }}>
-          <button type="button" onClick={() => alert('Draft Saved!')}>Save Draft</button>
-          <button type="submit">Submit Trade</button>
-        </div>
+        {/* Input rows */}
+        {/* File upload and table */}
       </form>
-
-      {excelData.length > 0 && (
-        <div className="excel-preview">
-          <h3>📄 Uploaded Forex Data</h3>
-          <div className="column-selector">
-            <label style={{ fontWeight: 'bold' }}>
-              <input type="checkbox" checked={selectAll} onChange={handleSelectAllToggle} />
-              Select All
-            </label>
-            {fixedColumnOrder.map((col) => (
-              <label key={col}>
-                <input type="checkbox" checked={selectedColumns.includes(col)} onChange={() => handleColumnToggle(col)} />
-                {col}
-              </label>
-            ))}
-          </div>
-          <button className="download-button" onClick={downloadCSV}>⬇️ Download CSV</button>
-          <table>
-            <thead>
-              <tr>
-                {fixedColumnOrder.filter(col => selectedColumns.includes(col)).map((col) => (
-                  <th key={col}>{col}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {excelData.map((row, idx) => (
-                <tr key={idx}>
-                  {fixedColumnOrder.filter(col => selectedColumns.includes(col)).map((col) => (
-                    <td key={col}>{row[col]}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 };
